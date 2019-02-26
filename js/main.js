@@ -107,22 +107,24 @@ Piece.setId = function(){return Piece.id++}
 
 
 
-// Layouts are indexed with board notation, not array indexing
+// Layouts are indexed with shogi board notation, not array representation indexing
+// TODO - need to be able to parse "9-1" so it will place multiple pieces in a row
 const standardLayout = {
     "black": {
-        "K": [[9, 5]],
-        "G": [[9, 6], [1, 4]],
-        "S": [[9, 7], [1, 3]],
-        "N": [[9, 8], [1, 2]],
-        "L": [[9, 9], [1, 1]],
+        "K": [[5, 9]],
+        "G": [[6, 9], [4, 9]],
+        "S": [[7, 9], [3, 9]],
+        "N": [[8, 9], [2, 9]],
+        "L": [[9, 9], [1, 9]],
         "B": [[8, 8]],
-        "R": [[8, 2]],
-        "P": [[7,"9-1"]]
+        "R": [[2, 8]],
+        "P": [["9-1", 7]]
     }
 };
 
 // Array is indexed in opposite corner to board
 // board.length is 1 greater than playable board 
+// TODO - need to check this still works with 2-cell border
 function notationToIndex(boardFile, boardRank, actualSize) {
     return {x:  actualSize - boardFile, y: actualSize - boardRank}
 }
@@ -179,16 +181,6 @@ function checkLayout(layout) {
 // so forward movement for black are MINUS rank values 
 // Need to invert the vector signs for white movement
 // How to take into account flipping of board for black? Doesn't matter, only display changes
-const moveSet = {
-    "K": {
-            vectors: []
-
-    },
-    "P": {
-            vectors: [[0, -1]],
-            ranging: false
-    }
-}
 
 const vectorList = {
     "N": [0, -1],
@@ -200,6 +192,23 @@ const vectorList = {
     "W": [-1, 0],
     "NW": [-1, -1]
 }
+
+const moveSet = {
+    "K": {
+            vectors: [vectorList.N ]
+
+            // or vectors["N", "E", "W", etc] - and then generate the actual values?
+            // vectorList.N .E.. whatever seems fairly painful to type and less convienient that just typing out the vectors
+            // Probably best to encapsulate move related functions so could just declare them as vars?
+            // Decide if using ES5/6 features... passing and destructuring the object is one option?
+            // not sure whether to implement system where add vectors together: knight movement would be something like "[N+NW][N+NE]"
+    },
+    "P": {
+            vectors: [[0, -1]],
+            ranging: false
+    }
+}
+
 
 
  const pieceNames = new Bimap({
@@ -213,7 +222,24 @@ const vectorList = {
     "King" : 'K'
  });
 
-
+// TODO
+function mirrorLayout(layout) {
+    mirror = {};
+    console.log(layout);
+    let midpoint = (boardLength + 1) / 2;
+    for(var pieces in layout) {
+        mirror[pieces] = layout[pieces].map(piece => piece.map(coord => {
+            if(coord < midpoint) {
+                return coord + (midpoint + coord);
+            } else if (coord > midpoint) {
+                return midpoint - (coord - midpoint);
+            } else {
+                return coord;
+            }
+        }));
+    }
+    console.dir(mirror);
+}
 
 function Bimap(map) {
     this.map = map;

@@ -15,6 +15,11 @@
     - function to translate grid notation to array notation
 - rethink if going to use -1 as out of bounds, if so will need 2 deep border, due to knight
     - also look at 0x88 representation
+- function to mirror layout coordinate for placing white pieces according to black pattern
+    - Think will need to limit board dimensions to being square and odd
+        - need a middle square for mirroring, also doesn't really make sense otherwise
+        - actually, sides just need to be odd.
+
 
 ## V.0
 ### Goals
