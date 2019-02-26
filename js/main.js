@@ -52,6 +52,8 @@ const pieceOrder = {
     this.pieceOrder = pieceOrder[this.options.ordering];
     this.status = {};
 
+    this.pieces = [];
+
     function useDefaultOptions() {
         let defaults = {};
         for(var attrib in defaultOptions) {
@@ -119,7 +121,8 @@ const standardLayout = {
         "B": [[8, 8]],
         "R": [[2, 8]],
         "P": [["9-1", 7]]
-    }
+    },
+    boardLength: 9
 };
 
 // Array is indexed in opposite corner to board
@@ -133,14 +136,16 @@ function notationToIndex(boardFile, boardRank, actualSize) {
 // if all pieces go into capture pool by default, then can click to place them where required.
 // If hasOwnProperty("black") is false, repeat piece list for black and white
 const standardPieceList = {
-    "K": 1,
-    "R": 1,
-    "B": 1,
-    "G": 2,
-    "S": 2,
-    "N": 2,
-    "L": 2,
-    "P": 9
+    "black": {
+        "K": 1,
+        "R": 1,
+        "B": 1,
+        "G": 2,
+        "S": 2,
+        "N": 2,
+        "L": 2,
+        "P": 9
+    }
 }
 
 function setUpPieces(pieceList, layout, board) {
@@ -152,10 +157,22 @@ function setUpPieces(pieceList, layout, board) {
     // if detect '-' in rank Xor file, then make multiples of this piece along the rank or file
     // Will have to check for collision detection, two pawn [nifu] restriction, one king only to prevent illegal positioning
     
-    board.status.pieceList = checkPieceList(pieceList);
+    //board.status.pieceList = checkPieceList(pieceList);
+    let startPos = [];
+    startPos.push(layout.black);
+    if(layout.hasOwnProperty("white")) {
+        startPos.push(layout.white);
+    } else {
+        startPos.push(mirrorLayout(layout.black, layout.boardLength));
+    }
+
+    console.log(startPos);
+
 }
 
 // Checks if pieceList object is correctly formatted - if none of a certain piece are required, must still be present but with value of 0
+// TODO - check for black/white properties
+// boardSize * 2 is just arbitary limit to amount of pieces allowed, adjust this later
 function checkPieceList(pieceList, pieceOrder){
     let missingPiece;
     let invalidNumber;
@@ -177,11 +194,16 @@ function checkPieceList(pieceList, pieceOrder){
 function checkLayout(layout) {
     console.log("TODO");
 }
+
+
+function createPieces() {
+
+}
+
 // Remember that the actual shogi board is numbered 1,1 at top-right, but the array representation starts at top left
 // so forward movement for black are MINUS rank values 
 // Need to invert the vector signs for white movement
 // How to take into account flipping of board for black? Doesn't matter, only display changes
-
 const vectorList = {
     "N": [0, -1],
     "NE": [1, -1],
@@ -222,8 +244,8 @@ const moveSet = {
     "King" : 'K'
  });
 
-// TODO
-function mirrorLayout(layout) {
+
+function mirrorLayout(layout, boardLength) {
     mirror = {};
     console.log(layout);
     let midpoint = (boardLength + 1) / 2;
@@ -239,6 +261,7 @@ function mirrorLayout(layout) {
         }));
     }
     console.dir(mirror);
+    return mirror;
 }
 
 function Bimap(map) {
