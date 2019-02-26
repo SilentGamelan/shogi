@@ -6,7 +6,15 @@
 - create file structure
 - set up devblog
 - choose tech stack
-
+- Read up on state machines
+- set up .gitignore
+- implement board orientation based on current player
+- Add Romaji and abbreviated Kanji to tile name object, with lookup methods
+- Write a tool that writes out piece placements in correct format
+- correct file/rank numbering - should be 1,1 at the top-right of the board
+    - function to translate grid notation to array notation
+- rethink if going to use -1 as out of bounds, if so will need 2 deep border, due to knight
+    - also look at 0x88 representation
 
 ## V.0
 ### Goals
