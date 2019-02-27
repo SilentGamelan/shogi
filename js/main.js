@@ -49,7 +49,7 @@ const pieceOrder = {
     this.board = GameBoard.initBoard(this.options);
     // refactor this, clunky
     this.boardSize = this.options.boardSize;
-    this.pieceOrder = pieceOrder[this.options.ordering];
+    this.ordering = pieceOrder[this.options.ordering];
     this.status = {};
 
     this.pieces = [];
@@ -79,10 +79,10 @@ const pieceOrder = {
     //return Array(options.boardSize + 1).fill(0).map(x => Array(options.boardSize+1).fill(0));
     let cell = [];
 
-    for(let i = 0; i < options.boardSize + 1; i++) {
+    for(let i = 0; i < options.boardSize + 2; i++) {
         let row = [];
-        for(let j = 0; j < options.boardSize + 1; j++) {
-            let cellValue = (i < 2 || j < 2 || i > options.boardSize || j > options.boardSize) ? -1 : 0;
+        for(let j = 0; j < options.boardSize + 2; j++) {
+            let cellValue = (i < 2 || j < 2 || i >= options.boardSize || j >= options.boardSize) ? -1 : 0;
             row.push(cellValue);
             }
         cell.push(row);
@@ -91,26 +91,27 @@ const pieceOrder = {
  }
 
 
-// Static variable and method
-Piece.id = 1;
-Piece.setId = function(){return Piece.id++}
+
 
 // No need to track orientation for each piece, determined by owner
- function Piece({ type, isPromoted, inPLay, isCaptured, isBlack, file, rank }) {
+ function Piece( type, isPromoted, isCaptured, isBlack, file, rank ) {
     this.type = type || null;
-    this.isPromoted = promoted || false;
-    this.inPlay = inPlay || true;;
-    this.isCaptured = false;
-    this.isBlack = isBlack || null;
+    this.isPromoted = isPromoted || false;
+    this.isCaptured = isCaptured || false;
+    this.isBlack = isBlack || true;
     this.file = file  || null;
     this.rank = rank || null;
-    this.id = piece.setId();
+    this.id = Piece.setId();
  }
 
+ // Static variable and method - wrong place to attach this? think the board should keep track of the ID's of its pieces.
+Piece.id = 0;
+Piece.setId = function(){return Piece.id++}
 
 
 // Layouts are indexed with shogi board notation, not array representation indexing
 // TODO - need to be able to parse "9-1" so it will place multiple pieces in a row
+// FIXME - need to rename boardLength or otherwise ensure no collision with gameBoard.boardLength
 const standardLayout = {
     "black": {
         "K": [[5, 9]],
@@ -120,7 +121,8 @@ const standardLayout = {
         "L": [[9, 9], [1, 9]],
         "B": [[8, 8]],
         "R": [[2, 8]],
-        "P": [["9-1", 7]]
+        "P": [[9, 7], [8, 7], [7, 7], [6, 7], [5, 7], [4, 7], [3, 7], [2, 7], [1, 7]]
+        //"P": [["9-1", 7]]
     },
     boardLength: 9
 };
@@ -166,7 +168,15 @@ function setUpPieces(pieceList, layout, board) {
         startPos.push(mirrorLayout(layout.black, layout.boardLength));
     }
 
-    console.log(startPos);
+    for(type of board.ordering) {
+        for(piece of layout.black[type]) {
+            var newPiece = new Piece(type=type, isBlack=true, file=piece[0], rank=piece[1]);
+            board.pieces.push(newPiece);
+            board.board[newPiece.file][newPiece.rank] = newPiece.id;
+        }
+    }
+
+    
 
 }
 
