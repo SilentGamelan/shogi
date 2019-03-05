@@ -201,20 +201,46 @@ function setUpPieces(pieceList, layout, board) {
 // TODO - check for black/white properties
 // boardSize * 2 is just arbitary limit to amount of pieces allowed, adjust this later
 function checkPieceList(pieceList, pieceOrder){
-    let missingPiece;
-    let invalidNumber;
-    for(p of pieceOrder) {
-        if(!pieceList.hasOwnProperty(p)) {
-            missingPiece.push(p);
-        } else if (pieceList[p] < 0 || pieceList[p] > (gameBoard.boardSize * 2)) {
-            invalidNumber.push(p + ":" + pieceList[p])
+    let errors = {};
+    let players = [];
+
+    if(!pieceList.hasOwnProperty("black")) {
+        let tempErrMsg = 'Incorrectly formatted - Missing property: "Black"';
+        errors.push(tempErrMsg);
+        console.error(errors);
+        return "ERROR CODE- TODO ";
+    } else {
+        players.push("black");
+    }
+
+    if(pieceList.hasOwnProperty("white")) {
+        players.push("white");
+    }
+
+    // FIXME: Pretty sure should be using .zip(), filter() or similar
+    // also, probably better 
+    for(player of players) {
+        let missingPiece = [];
+        let invalidNumber = [];
+        for(p of pieceOrder) {
+            if(!pieceList[player].hasOwnProperty(p)) {
+                missingPiece.push(p);
+            } else if (pieceList[p] < 0 || pieceList[p] > (gameBoard.boardSize * 2)) {
+                invalidNumber.push(p + ":" + pieceList[p])
+            }
         }
+        if(missingPiece.length > 0) errors[player].missingPiece = missingPiece;
+        if(invalidNumber.length > 0) errors[player].invalidNumber = invalidNumber;
+    
     }
     
-    let errors;
-    if(missingPiece) errors.missingPiece = missingPiece;
-    if(invalidNumber) errors.invalidNumber = invalidNumber;
-    return errors;
+    if(Object.keys(errors).length == 0) {
+        console.log("pieceList is valid");
+        return("ERRORCODE: TODO - is OK")
+    } else {
+        return("ERRORCODE: TODO - notValid");
+    console.table(errors);
+    }
 }
         
 
