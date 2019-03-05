@@ -46,7 +46,7 @@ const pieceOrder = {
     // TODO - go through and make appropriate variables private after get working prototype
 
     this.options = userSettings || useDefaultOptions();
-    this.board = GameBoard.initBoard(this.options);
+    let board = GameBoard.initBoard(this.options);
     // refactor this, clunky
     this.boardSize = this.options.boardSize;
     this.ordering = pieceOrder[this.options.ordering];
@@ -65,11 +65,20 @@ const pieceOrder = {
     }
 
     this.showBoard = function() {
-        console.dir(this.board);
+        let display = ""
+        for(let i=0; i < board.length; i++) {
+            for(let j=0; j < board.length; j++) {
+                if(board[i][j] > -1) display += " ";
+                display += board[i][j] + "\t";
+            }
+            display += "\n";
+        }
+
+        console.log(display);
     }
 
     this.showOptions = function() {
-        console.dir(this.options);
+        console.dir(options);
     }
  }
 
@@ -77,17 +86,17 @@ const pieceOrder = {
  GameBoard.initBoard = function(options) {
      console.log(options);
     //return Array(options.boardSize + 1).fill(0).map(x => Array(options.boardSize+1).fill(0));
-    let cell = [];
-
-    for(let i = 0; i < options.boardSize + 2; i++) {
+    let newBoard = [];
+    const borderSize = 2;
+    for(let i = 0; i < options.boardSize + (borderSize * 2); i++) {
         let row = [];
-        for(let j = 0; j < options.boardSize + 2; j++) {
-            let cellValue = (i < 2 || j < 2 || i >= options.boardSize || j >= options.boardSize) ? -1 : 0;
+        for(let j = 0; j < options.boardSize + (borderSize * 2); j++) {
+            let cellValue = (i < borderSize || j < borderSize || i >= options.boardSize + borderSize || j >= options.boardSize + borderSize) ? -1 : 0;
             row.push(cellValue);
             }
-        cell.push(row);
+        newBoard.push(row);
         }
-    return cell;
+    return newBoard;
  }
 
 
