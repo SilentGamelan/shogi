@@ -137,10 +137,18 @@ const standardLayout = {
 };
 
 // Array is indexed in opposite corner to board
-// board.length is 1 greater than playable board 
-// TODO - need to check this still works with 2-cell border
-function notationToIndex(boardFile, boardRank, actualSize) {
+// board.length is 2 greater than playable board, given out-of-bounds border
+function notationToIndex(boardFile, boardRank, playableSize, borderSize) {
+    let actualSize = playableSize + borderSize;
     return {x:  actualSize - boardFile, y: actualSize - boardRank}
+}
+
+// Actual array index, not the effective array index
+// ie; for a board with a 2-cell border (0,0) re
+function indexToNotation(x, y, playableSize, borderSize) {
+    x = x - borderSize;
+    y = y - borderSize;
+    return {file: playableSize - x, rank: playableSize - y};
 }
 
 // Separating piece list from layout, as will be easier to make a tool for creating problem sets without manually writing in values
