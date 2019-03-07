@@ -19,7 +19,7 @@ After finally getting back and knuckling down to making some vaguely structured 
 
 
 It's almost enough to go down the path of believing arrays begin at 1....
-![oh no](./startAt1.png)
+![oh no](./images/startAt1.png)
 
 
 
@@ -28,7 +28,7 @@ It's almost enough to go down the path of believing arrays begin at 1....
 
 
 ## I Can't Believe You've Done This
-### or, WTF can't I stop overcomplicating things
-> 06/03/2019 - In a world primarily defined by raging hunger and very stiff thighs
+### or, WTF why can't I stop overcomplicating things
+*06/03/2019 - In a world primarily defined by raging hunger and very stiff thighs*
 ---
 
