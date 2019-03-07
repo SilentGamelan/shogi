@@ -19,7 +19,7 @@ After finally getting back and knuckling down to making some vaguely structured 
 
 
 It's almost enough to go down the path of believing arrays begin at 1....
-![oh no](./images/startAt1.png)
+![oh no](./images/startAt1.PNG)
 
 
 
