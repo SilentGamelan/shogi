@@ -12,8 +12,12 @@ const ERRCODE = {
     INCOMPLETELAYOUT: 2
 }
 
-let playerList = [];
-let playerCount = 0;
+var playerCount = 0;
+let playerList = {
+    black: new Player(),
+    white: new Player(),
+};
+
 
 const pieceOrder = { 
     "ohashi":    ['K', 'G', 'S', 'N', 'L', 'B', 'R', 'P'],
@@ -30,7 +34,7 @@ const pieceOrder = {
     playerCount++;
     this.name = name || "Player " + playerCount;
     this.timer = null;
-    this.ownedPieces = [];
+    this.activePieces = [];
     this.capturedPieces = [];
 
  }
@@ -46,7 +50,7 @@ const pieceOrder = {
     // TODO - go through and make appropriate variables private after get working prototype
 
     this.options = userSettings || useDefaultOptions();
-    let board = GameBoard.initBoard(this.options);
+    this.board = GameBoard.initBoard(this.options);
     // refactor this, clunky
     this.boardSize = this.options.boardSize;
     this.ordering = pieceOrder[this.options.ordering];
@@ -64,8 +68,12 @@ const pieceOrder = {
         return defaults;
     }
 
+    // !TODO - parse board so piece symbols shown instead of id
+    // !TODO - use css styling to differentiate black and white pieces
     this.showBoard = function() {
         let display = ""
+        console.log(this);
+        let board = this.board;
         for(let i=0; i < board.length; i++) {
             for(let j=0; j < board.length; j++) {
                 if(board[i][j] > -1) display += " ";
@@ -101,71 +109,26 @@ const pieceOrder = {
 
 
 
-
+// !FIXME - UP TO HERE - need to check default parameters work, as well as malformed Pieces (ie; captured and file/rank given) 
 // No need to track orientation for each piece, determined by owner
- function Piece( type, isPromoted, isCaptured, isBlack, file, rank ) {
-    this.type = type || null;
+// Using ES6 deconstruction and assignment to emulate named parameters with defaults
+ function Piece({ pieceType = null, isPromoted = false, isCaptured = false, isBlack = true, file = null, rank = null} = {} ) {
+    this.pieceType = pieceType;
     this.isPromoted = isPromoted || false;
-    this.isCaptured = isCaptured || false;
     this.isBlack = isBlack || true;
     this.file = file  || null;
     this.rank = rank || null;
+    this.isCaptured = (isCaptured || file == null || rank == null) || false;
     this.id = Piece.setId();
  }
 
  // Static variable and method - wrong place to attach this? think the board should keep track of the ID's of its pieces.
-Piece.id = 0;
+Piece.id = 1;
 Piece.setId = function(){return Piece.id++}
 
 
-// Layouts are indexed with shogi board notation, not array representation indexing
-// TODO - need to be able to parse "9-1" so it will place multiple pieces in a row
-// FIXME - need to rename boardLength or otherwise ensure no collision with gameBoard.boardLength
-const standardLayout = {
-    "black": {
-        "K": [[5, 9]],
-        "G": [[6, 9], [4, 9]],
-        "S": [[7, 9], [3, 9]],
-        "N": [[8, 9], [2, 9]],
-        "L": [[9, 9], [1, 9]],
-        "B": [[8, 8]],
-        "R": [[2, 8]],
-        "P": [[9, 7], [8, 7], [7, 7], [6, 7], [5, 7], [4, 7], [3, 7], [2, 7], [1, 7]]
-        //"P": [["9-1", 7]]
-    },
-    boardLength: 9
-};
 
-// Array is indexed in opposite corner to board
-// board.length is 2 greater than playable board, given out-of-bounds border
-function notationToIndex(boardFile, boardRank, playableSize, borderSize) {
-    let actualSize = playableSize + borderSize;
-    return {x:  actualSize - boardFile, y: actualSize - boardRank}
-}
 
-// Actual array index, not the effective array index
-// ie; for a board with a 2-cell border (0,0) re
-function indexToNotation(x, y, playableSize, borderSize) {
-    x = x - borderSize;
-    y = y - borderSize;
-    return {file: playableSize - x, rank: playableSize - y};
-}
-
-// Separating piece list from layout, as will be easier to make a tool for creating problem sets without manually writing in values
-// if all pieces go into capture pool by default, then can click to place them where required.
-// If hasOwnProperty("black") is false, repeat piece list for black and white
-const standardPieceList = {
-    "black": {
-        "K": 1,
-        "R": 1,
-        "B": 1,
-        "G": 2,
-        "S": 2,
-        "N": 2,
-        "L": 2,
-        "P": 9
-    }
-}
 
 function setUpPieces(pieceList, layout, board) {
     // iterate over piece list
@@ -173,29 +136,22 @@ function setUpPieces(pieceList, layout, board) {
     // loop over layout
     // if more pieces in layout than piece list, set rank and file to null, isCaptured to true
     // if less pieces, then throw an error
-    // if detect '-' in rank Xor file, then make multiples of this piece along the rank or file
+    // if detect '-' in rank or file, then make multiples of this piece along the rank or file
     // Will have to check for collision detection, two pawn [nifu] restriction, one king only to prevent illegal positioning
     
     //board.status.pieceList = checkPieceList(pieceList);
-    let startPos = [];
-    startPos.push(layout.black);
-    if(layout.hasOwnProperty("white")) {
-        startPos.push(layout.white);
-    } else {
-        startPos.push(mirrorLayout(layout.black, layout.boardLength));
-    }
+    
+    checkLayout(layout);
 
-    for(type of board.ordering) {
-        for(piece of layout.black[type]) {
-            var newPiece = new Piece(type=type, isBlack=true, file=piece[0], rank=piece[1]);
-            board.pieces.push(newPiece);
-            board.board[newPiece.file][newPiece.rank] = newPiece.id;
+    for(player in layout.playerPatterns) {   
+        for(pieceType of board.ordering) {
+                for(piece of layout.playerPatterns[player][pieceType]) {
+                    createPiece(pieceType, piece, player, board);
+                }
+            }
         }
     }
 
-    
-
-}
 
 // Checks if pieceList object is correctly formatted - if none of a certain piece are required, must still be present but with value of 0
 // TODO - check for black/white properties
@@ -225,7 +181,7 @@ function checkPieceList(pieceList, pieceOrder){
         for(p of pieceOrder) {
             if(!pieceList[player].hasOwnProperty(p)) {
                 missingPiece.push(p);
-            } else if (pieceList[p] < 0 || pieceList[p] > (gameBoard.boardSize * 2)) {
+            } else if (pieceList[player][p] < 0 || pieceList[player][p] > (gameBoard.boardSize * 2)) {
                 invalidNumber.push(p + ":" + pieceList[p])
             }
         }
@@ -234,24 +190,49 @@ function checkPieceList(pieceList, pieceOrder){
     
     }
     
+    // ES5 syntax for checkng if object is empty
     if(Object.keys(errors).length == 0) {
         console.log("pieceList is valid");
+        console.log(errors);
         return("ERRORCODE: TODO - is OK")
     } else {
         return("ERRORCODE: TODO - notValid");
     console.table(errors);
     }
+
+
 }
         
-
+// TODO - error checking
 function checkLayout(layout) {
-    console.log("TODO");
+    if(!layout.playerPatterns.hasOwnProperty("white")) {
+        console.warn("Missing layout for White player, mirroring Black positions")
+        layout.playerPatterns.white = mirrorLayout(layout.black, layout.boardLength);
+    }
+
+    console.log("TODO - layout checking");
+}
+
+// TODO - where am I going to attach this method?
+// Important to decide as it affects how it is called from other methods, and what parameters are required.
+// Also have to consider if I'm unintentionally creating a large number of closures...
+function createPiece(pieceType, piece, player, board) {
+    let isBlack = (player == 'black') ? true : false;
+
+        let newPiece = new Piece({pieceType:pieceType, isBlack:isBlack, file:piece[0], rank:piece[1]});
+        board.pieces.push(newPiece.id);
+        if(newPiece.isCaptured) {
+            playerList[player].capturedPieces.push(newPiece.id);
+        } else {
+            playerList[player].activePieces.push(newPiece.id);
+            let {x, y} = notationToIndex(newPiece.file, newPiece.rank, board.boardSize)
+            board.board[y][x] = newPiece.id;
+        }
+        gameBoard.showBoard();    
 }
 
 
-function createPieces() {
 
-}
 
 // Remember that the actual shogi board is numbered 1,1 at top-right, but the array representation starts at top left
 // so forward movement for black are MINUS rank values 
@@ -328,5 +309,56 @@ function Bimap(map) {
 
 Bimap.prototype.get = function(key) { return this.map[key] };
 Bimap.prototype.revGet = function(key) { return this.reverseLookup[key]};
+
+
+// Layouts are indexed with shogi board notation, not array representation indexing
+// TODO - need to be able to parse "9-1" so it will place multiple pieces in a row
+// FIXME - need to rename boardLength or otherwise ensure no collision with gameBoard.boardLength
+const standardLayout = {
+    playerPatterns: {
+        "black": {
+            "K": [[5, 9]],
+            "G": [[6, 9], [4, 9]],
+            "S": [[7, 9], [3, 9]],
+            "N": [[8, 9], [2, 9]],
+            "L": [[9, 9], [1, 9]],
+            "B": [[8, 8]],
+            "R": [[2, 8]],
+            "P": [[9, 7], [8, 7], [7, 7], [6, 7], [5, 7], [4, 7], [3, 7], [2, 7], [1, 7]]
+            //"P": [["9-1", 7]]
+        }
+    },
+    boardSize: 9
+};
+
+// Separating piece list from layout, as will be easier to make a tool for creating problem sets without manually writing in values
+// if all pieces go into capture pool by default, then can click to place them where required.
+// If hasOwnProperty("black") is false, repeat piece list for black and white
+const standardPieceList = {
+    "black": {
+        "K": 1,
+        "R": 1,
+        "B": 1,
+        "G": 2,
+        "S": 2,
+        "N": 2,
+        "L": 2,
+        "P": 9
+    }
+}
+// Array is indexed in opposite corner to board
+// board.length is 2 greater than playable board, given out-of-bounds border
+function notationToIndex(file, rank, playableSize, borderSize=2) {
+    let actualSize = playableSize + borderSize;
+    return {x:  actualSize - file, y: actualSize - rank}
+}
+
+// Actual array index, not the effective array index
+// ie; for a board with a 2-cell border (0,0) re
+function indexToNotation(x, y, playableSize, borderSize = 2) {
+    x = x - borderSize;
+    y = y - borderSize;
+    return {file: playableSize - x, rank: playableSize - y};
+}
 
  let gameBoard = new GameBoard();
