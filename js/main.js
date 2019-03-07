@@ -72,11 +72,11 @@ const pieceOrder = {
     // !TODO - use css styling to differentiate black and white pieces
     this.showBoard = function() {
         let display = ""
-        console.log(this);
+        
         let board = this.board;
         for(let i=0; i < board.length; i++) {
             for(let j=0; j < board.length; j++) {
-                if(board[i][j] > -1) display += " ";
+                if(board[i][j] > -1 && board[i][j] < 10) display += " ";
                 display += board[i][j] + "\t";
             }
             display += "\n";
@@ -203,17 +203,19 @@ function checkPieceList(pieceList, pieceOrder){
 
 }
         
-// TODO - error checking
+// !TODO - error checking
+// boards must be odd so midpoint can be calculated for mirroring
+// square boards only for time being
 function checkLayout(layout) {
     if(!layout.playerPatterns.hasOwnProperty("white")) {
         console.warn("Missing layout for White player, mirroring Black positions")
-        layout.playerPatterns.white = mirrorLayout(layout.black, layout.boardLength);
+        layout.playerPatterns.white = mirrorLayout(layout.playerPatterns.black, layout.boardSize);
     }
 
     console.log("TODO - layout checking");
 }
 
-// TODO - where am I going to attach this method?
+// !TODO - where am I going to attach this method?
 // Important to decide as it affects how it is called from other methods, and what parameters are required.
 // Also have to consider if I'm unintentionally creating a large number of closures...
 function createPiece(pieceType, piece, player, board) {
@@ -279,19 +281,22 @@ const moveSet = {
  });
 
 
-function mirrorLayout(layout, boardLength) {
+function mirrorLayout(layout, boardSize) {
     mirror = {};
     console.log(layout);
-    let midpoint = (boardLength + 1) / 2;
+    let midpoint = (boardSize + 1) / 2;
     for(var pieces in layout) {
         mirror[pieces] = layout[pieces].map(piece => piece.map(coord => {
-            if(coord < midpoint) {
-                return coord + (midpoint + coord);
+           /* if(coord < midpoint) {
+                return midpoint + (midpoint + coord);
             } else if (coord > midpoint) {
                 return midpoint - (coord - midpoint);
             } else {
                 return coord;
             }
+            */
+           let offset = midpoint - coord;
+           return midpoint + offset
         }));
     }
     console.dir(mirror);
@@ -348,13 +353,17 @@ const standardPieceList = {
 }
 // Array is indexed in opposite corner to board
 // board.length is 2 greater than playable board, given out-of-bounds border
+// effectively, applying an offset to account for into account 0-indexing of array, 1-indexing of board, border, and mirroring of x,y
+// y-axis which off 
+// x-axis which offsets from the end of the array
 function notationToIndex(file, rank, playableSize, borderSize=2) {
-    let actualSize = playableSize + borderSize;
-    return {x:  actualSize - file, y: actualSize - rank}
+    let offset = playableSize + borderSize;
+    return {x:  offset - file, y: rank + (borderSize - 1)}
 }
 
 // Actual array index, not the effective array index
 // ie; for a board with a 2-cell border (0,0) re
+// !FIXME - nTI is borked, assume this is too
 function indexToNotation(x, y, playableSize, borderSize = 2) {
     x = x - borderSize;
     y = y - borderSize;
