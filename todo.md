@@ -19,7 +19,7 @@
     - Think will need to limit board dimensions to being square and odd
         - need a middle square for mirroring, also doesn't really make sense otherwise
         - actually, sides just need to be odd.
-
+- test ES6 code on safari and firefox
 
 ## V.0
 ### Goals
@@ -27,7 +27,7 @@
 - working object orientated internal representation
 
 ### Feature List
--[] Working ascii representation
+-[x] Working ascii representation
 -[] Responsive board representation in css grid [mockup]
 -[] Correct placement of tiles in internal representation
 -[] Implement movement rules in internal representation
