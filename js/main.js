@@ -222,7 +222,7 @@ function createPiece(pieceType, piece, player, board) {
     let isBlack = (player == 'black') ? true : false;
 
         let newPiece = new Piece({pieceType:pieceType, isBlack:isBlack, file:piece[0], rank:piece[1]});
-        board.pieces.push(newPiece.id);
+        board.pieces.push(newPiece);
         if(newPiece.isCaptured) {
             playerList[player].capturedPieces.push(newPiece.id);
         } else {
@@ -280,21 +280,15 @@ const moveSet = {
     "King" : 'K'
  });
 
-
+// calculates piece displacement from midpoint then adds the offset back to the midpoint
+// simplified logic, now don't need case statements
+// can just add positive or negative offsets to get the correct new position, 0-offset has no effect  as desired. 
 function mirrorLayout(layout, boardSize) {
     mirror = {};
     console.log(layout);
     let midpoint = (boardSize + 1) / 2;
     for(var pieces in layout) {
         mirror[pieces] = layout[pieces].map(piece => piece.map(coord => {
-           /* if(coord < midpoint) {
-                return midpoint + (midpoint + coord);
-            } else if (coord > midpoint) {
-                return midpoint - (coord - midpoint);
-            } else {
-                return coord;
-            }
-            */
            let offset = midpoint - coord;
            return midpoint + offset
         }));
@@ -364,10 +358,9 @@ function notationToIndex(file, rank, playableSize, borderSize=2) {
 // Actual array index, not the effective array index
 // ie; for a board with a 2-cell border (0,0) re
 // !FIXME - nTI is borked, assume this is too
-function indexToNotation(x, y, playableSize, borderSize = 2) {
-    x = x - borderSize;
-    y = y - borderSize;
-    return {file: playableSize - x, rank: playableSize - y};
+function indexToNotation(x, y, playableSize, borderSize=2) {
+    let offset = playableSize + borderSize;
+    return {file: offset - x, rank: y - (borderSize - 1)};
 }
 
  let gameBoard = new GameBoard();
