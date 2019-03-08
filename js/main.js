@@ -44,7 +44,8 @@ const pieceOrder = {
     // Wrap this in a singleton constructor, so default options aren't bundled onto every instance?
     let defaultOptions = {
         boardSize: 9,
-        ordering: "ohashi"
+        ordering: "ohashi",
+        borderSize: 2
     }
 
     // TODO - go through and make appropriate variables private after get working prototype
@@ -74,6 +75,29 @@ const pieceOrder = {
         let display = ""
         
         let board = this.board;
+        let boardSize = this.boardSize;
+        let borderSize = this.options.borderSize;
+
+        for(let i=borderSize; i < boardSize + borderSize; i++) {
+            for(let j=borderSize; j < boardSize + borderSize; j++) {
+                let id = board[i][j]
+                if(id === 0) {
+                    display += " ";
+                } else {
+                    display += this.pieces.find(x => x.id === id).pieceType;
+                }
+                display += "\t";
+            }
+            display += "\n";
+        }
+
+        console.log(display);
+    }
+
+    this.showIDBoard = function() {
+        let display = ""
+        
+        let board = this.board;
         for(let i=0; i < board.length; i++) {
             for(let j=0; j < board.length; j++) {
                 if(board[i][j] > -1 && board[i][j] < 10) display += " ";
@@ -81,9 +105,10 @@ const pieceOrder = {
             }
             display += "\n";
         }
-
+        
         console.log(display);
     }
+    
 
     this.showOptions = function() {
         console.dir(options);
@@ -146,7 +171,8 @@ function setUpPieces(pieceList, layout, board) {
     for(player in layout.playerPatterns) {   
         for(pieceType of board.ordering) {
                 for(piece of layout.playerPatterns[player][pieceType]) {
-                    createPiece(pieceType, piece, player, board);
+                    let newPiece = createPiece(pieceType, piece, player, board);
+                    placePiece(newPiece, board);
                 }
             }
         }
@@ -227,10 +253,14 @@ function createPiece(pieceType, piece, player, board) {
             playerList[player].capturedPieces.push(newPiece.id);
         } else {
             playerList[player].activePieces.push(newPiece.id);
-            let {x, y} = notationToIndex(newPiece.file, newPiece.rank, board.boardSize)
-            board.board[y][x] = newPiece.id;
         }
-        gameBoard.showBoard();    
+
+        return newPiece;
+}
+
+function placePiece(piece, board) {
+    let {x, y} = notationToIndex(piece.file, piece.rank, board.boardSize)
+    board.board[y][x] = piece.id;
 }
 
 
@@ -293,7 +323,6 @@ function mirrorLayout(layout, boardSize) {
            return midpoint + offset
         }));
     }
-    console.dir(mirror);
     return mirror;
 }
 
@@ -348,19 +377,18 @@ const standardPieceList = {
 // Array is indexed in opposite corner to board
 // board.length is 2 greater than playable board, given out-of-bounds border
 // effectively, applying an offset to account for into account 0-indexing of array, 1-indexing of board, border, and mirroring of x,y
-// y-axis which off 
-// x-axis which offsets from the end of the array
 function notationToIndex(file, rank, playableSize, borderSize=2) {
     let offset = playableSize + borderSize;
     return {x:  offset - file, y: rank + (borderSize - 1)}
 }
 
 // Actual array index, not the effective array index
-// ie; for a board with a 2-cell border (0,0) re
-// !FIXME - nTI is borked, assume this is too
+// ie; for a 9-cell board with a 2-cell border, [2][2] is the top left corner of play area
 function indexToNotation(x, y, playableSize, borderSize=2) {
     let offset = playableSize + borderSize;
     return {file: offset - x, rank: y - (borderSize - 1)};
 }
 
  let gameBoard = new GameBoard();
+ setUpPieces(standardPieceList, standardLayout, gameBoard)
+ gameBoard.showBoard();
