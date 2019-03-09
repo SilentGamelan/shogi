@@ -69,15 +69,20 @@ const pieceOrder = {
         return defaults;
     }
 
-    // !TODO - parse board so piece symbols shown instead of id
     // !TODO - use css styling to differentiate black and white pieces
     this.showBoard = function() {
+        this.logBoard();
+    }
+    
+    this.logBoard = function() {
         let display = ""
         
         let board = this.board;
         let boardSize = this.boardSize;
         let borderSize = this.options.borderSize;
 
+        display += "9\t8\t7\t6\t5\t4\t3\t2\t1\n";
+        display += "-\t-\t-\t-\t-\t-\t-\t-\t-\n";
         for(let i=borderSize; i < boardSize + borderSize; i++) {
             for(let j=borderSize; j < boardSize + borderSize; j++) {
                 let id = board[i][j]
@@ -88,13 +93,102 @@ const pieceOrder = {
                 }
                 display += "\t";
             }
-            display += "\n";
+            display += ("|" + (i-1) + "\n");
         }
 
         console.log(display);
     }
 
-    this.showIDBoard = function() {
+    this.logColourBoard = function() {
+        let board = this.board;
+        let boardSize = this.boardSize;
+        let borderSize = this.options.borderSize; let display = []
+        
+        const c = "%c";
+        const n = '\n';
+        const t = '\t';
+        
+        const base = "background: goldenrod; color: black; width: 10px; height: 10px;";
+        const border = "border: solid black 1px;";
+        const bBorder = "bottom-border: solid black 1px;";
+        const rBorder = "right-border: solid black 1px;";
+        
+        const black = "color: black;";
+        const white = "color: white;";
+
+        let TABBED = true;
+
+        let topSide = base + bBorder;
+        let rightSide = base + rBorder;
+        let cell = base + border;
+
+        let styles = [];
+        let lines = [];
+        let pixels = [];
+        
+        let style = ""; 
+
+
+        function px(pixel, currentStyle = style) {
+           
+
+            if(typeof pixel === 'string') {
+                storePixel(pixel, currentStyle);
+            } else if (Array.isArray(pixel)) {
+                pixel.forEach(p => {
+                    storePixel(p, currentStyle);
+                });
+            } else {
+                console.error("Invalid Pixel");
+                return "NOPE";
+            }
+        }
+
+        function storePixel(pixel, currentStyle) {
+            let end = "";
+            if(TABBED) end = t;
+            pixels.push(c + pixel + end);
+            styles.push(currentStyle)
+        }
+
+        function ln() {
+            lines = lines.concat(pixels);
+            lines.push(n);
+            pixels = [];
+        }
+
+
+        function conSoul() {
+            let display = []
+            let text =""
+            lines.forEach(line => text+=line);
+            display.push(text);
+            display = display.concat(styles);
+            console.log.apply(console, display);
+        }
+
+
+        px([9, 8, 7, 6, 5, 4, 3, 2, 1], topSide);
+        ln();
+
+        for(let i=borderSize; i < boardSize + borderSize; i++) {
+            for(let j=borderSize; j < boardSize + borderSize; j++) {
+                let id = board[i][j]
+                if(id === 0) {
+                    px(" ", cell);
+                } else {
+                    tile = this.pieces.find(x => x.id === id);
+                    px(tile.pieceType, cell + (tile.isBlack ? black : white));  
+                }
+            }
+            px("|" + (i-1), rightSide);
+            ln();
+        }
+
+        conSoul();
+    }
+
+    this.logIDBoard = function() {
         let display = ""
         
         let board = this.board;
@@ -392,3 +486,4 @@ function indexToNotation(x, y, playableSize, borderSize=2) {
  let gameBoard = new GameBoard();
  setUpPieces(standardPieceList, standardLayout, gameBoard)
  gameBoard.showBoard();
+ gameBoard.logColourBoard();
