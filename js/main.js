@@ -108,10 +108,10 @@ const pieceOrder = {
         const n = '\n';
         const t = '\t';
         
-        const base = "background: goldenrod; color: black; width: 10px; height: 10px;";
+        const base = "background: goldenrod; width: 10px; height: 10px;";
         const border = "border: solid black 1px;";
-        const bBorder = "bottom-border: solid black 1px;";
-        const rBorder = "right-border: solid black 1px;";
+        const bBorder = "bottom-border: solid black 1px; color: black;";
+        const rBorder = "right-border: solid black 1px; color: black;";
         
         const black = "color: black;";
         const white = "color: white;";
@@ -165,6 +165,7 @@ const pieceOrder = {
             display.push(text);
             display = display.concat(styles);
             console.log.apply(console, display);
+            console.log(display);
         }
 
 
@@ -233,11 +234,11 @@ const pieceOrder = {
 // Using ES6 deconstruction and assignment to emulate named parameters with defaults
  function Piece({ pieceType = null, isPromoted = false, isCaptured = false, isBlack = true, file = null, rank = null} = {} ) {
     this.pieceType = pieceType;
-    this.isPromoted = isPromoted || false;
-    this.isBlack = isBlack || true;
-    this.file = file  || null;
-    this.rank = rank || null;
-    this.isCaptured = (isCaptured || file == null || rank == null) || false;
+    this.isPromoted = isPromoted;
+    this.isBlack = isBlack;
+    this.file = file;
+    this.rank = rank;
+    this.isCaptured = isCaptured;
     this.id = Piece.setId();
  }
 
@@ -316,8 +317,9 @@ function checkPieceList(pieceList, pieceOrder){
         console.log(errors);
         return("ERRORCODE: TODO - is OK")
     } else {
+		console.table(errors);
         return("ERRORCODE: TODO - notValid");
-    console.table(errors);
+    
     }
 
 
@@ -331,7 +333,7 @@ function checkLayout(layout) {
         console.warn("Missing layout for White player, mirroring Black positions")
         layout.playerPatterns.white = mirrorLayout(layout.playerPatterns.black, layout.boardSize);
     }
-
+	console.dir(layout);
     console.log("TODO - layout checking");
 }
 
