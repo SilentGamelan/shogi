@@ -13,7 +13,7 @@
 - Write a tool that writes out piece placements in correct format
 - Correct file/rank numbering - should be 1,1 at the top-right of the board
     - function to translate grid notation to array notation
-- rethink if going to use -1 as out of bounds, if so will need 2 deep border, due to knight
+- Rethink if going to use -1 as out of bounds, if so will need 2 deep border, due to knight
     - also look at 0x88 representation
 - function to mirror layout coordinate for placing white pieces according to black pattern
     - Think will need to limit board dimensions to being square and odd
