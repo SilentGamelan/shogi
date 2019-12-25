@@ -3,9 +3,9 @@
 - Implement unit testing
 - Set up bug tracking list
 - Set up dev roadplan
-- create file structure
-- set up devblog
-- choose tech stack
+- Create file structure
+- Set up devblog
+- Choose tech stack
 - Read up on state machines
 - set up .gitignore
 - implement board orientation based on current player
