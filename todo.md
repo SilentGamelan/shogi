@@ -3,17 +3,17 @@
 - Implement unit testing
 - Set up bug tracking list
 - Set up dev roadplan
-- create file structure
-- set up devblog
-- choose tech stack
+- Create file structure
+- Set up devblog
+- Choose tech stack
 - Read up on state machines
 - set up .gitignore
 - implement board orientation based on current player
 - Add Romaji and abbreviated Kanji to tile name object, with lookup methods
 - Write a tool that writes out piece placements in correct format
-- correct file/rank numbering - should be 1,1 at the top-right of the board
+- Correct file/rank numbering - should be 1,1 at the top-right of the board
     - function to translate grid notation to array notation
-- rethink if going to use -1 as out of bounds, if so will need 2 deep border, due to knight
+- Rethink if going to use -1 as out of bounds, if so will need 2 deep border, due to knight
     - also look at 0x88 representation
 - function to mirror layout coordinate for placing white pieces according to black pattern
     - Think will need to limit board dimensions to being square and odd
